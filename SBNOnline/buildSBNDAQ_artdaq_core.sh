@@ -11,6 +11,8 @@ echo "build sbndaq_artdaq_core"
 
 echo "sbndaq_artdaq_core version: $SBNDAQ"
 
+echo "sbndaq_artdaq_core branch: $SBNDAQ_BRANCH"
+
 echo "base qualifiers: $QUAL"
 
 echo "build type: $BUILDTYPE"
@@ -79,7 +81,17 @@ cd $MRB_SOURCE  || exit 1
 
 # make sure we get a read-only copy
 #pull from the SBNSoftware git repository
-mrb g -r -t $SBNDAQ -d sbndaq_artdaq_core https://github.com/SBNSoftware/sbndaq-artdaq-core.git || exit 1
+mrb g -r -b $SBNDAQ_BRANCH -d sbndaq_artdaq_core https://github.com/SBNSoftware/sbndaq-artdaq-core.git || exit 1
+
+#get artdaq_core version
+artdaq_core_version=`grep 'artdaq_core ' $MRB_SOURCE/sbndaq_artdaq_core/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+
+setup artdaq_core $artdaq_core_version -q$QUAL:$BUILDTYPE
+deploy_artdaq_core=$?
+if [ $deploy_artdaq_core -ne 0 ]; then
+    echo "Pulling down and building artdaq_core"
+    mrb g -r -t $artdaq_core_version -d artdaq_core artdaq-core || exit 1
+fi
 
 cd $MRB_BUILDDIR || exit 1
 
