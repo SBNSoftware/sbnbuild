@@ -25,7 +25,8 @@ echo "workspace: $WORKSPACE"
 if [ `uname` = Darwin ]; then
     echo "Sorry ... not support MAC OS X builds right now."
     echo " :( "
-    exit 1
+    echo " ha ha who gets the last laugh! :-)"
+    #exit 1
 fi
 
 
@@ -44,17 +45,18 @@ echo "Building using $ncores cores."
 # Environment setup, uses /grid/fermiapp or cvmfs ...
 #TODO use icarus area, but will want to standardize this I think...
 
-if [ -f /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh ]; then
-
-  if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
-    /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/icarus.opensciencegrid.org/products/icarus
-  fi
-  source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh || exit 1
-
-else
-  echo "No setup file found."
-  exit 1
-fi
+#if [ -f /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh ]; then
+#
+#  if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
+#    /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/icarus.opensciencegrid.org/products/icarus
+#  fi
+#  source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh || exit 1
+#
+#else
+#  echo "No setup file found."
+#  exit 1
+#fi
+source /LArSoft/Products/setups
 
 
 setup gitflow || exit 1
@@ -100,11 +102,11 @@ mrbsetenv || exit 1
 mrb b -j$ncores || exit 1
 
 #Not needed for sbndaq_artdaq_core? not sure ... gonna leave...
-if uname | grep -q Linux; then
-
-  cp /usr/lib64/libXmu.so.6 sbndaq_artdaq_core/lib
-
-fi
+#if uname | grep -q Linux; then
+#
+#  cp /usr/lib64/libXmu.so.6 sbndaq_artdaq_core/lib
+#
+#fi
 
 mrb mp -n sbndaq_artdaq_core -- -j$ncores || exit 1
 
