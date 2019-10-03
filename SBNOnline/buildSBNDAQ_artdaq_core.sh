@@ -45,18 +45,17 @@ echo "Building using $ncores cores."
 # Environment setup, uses /grid/fermiapp or cvmfs ...
 #TODO use icarus area, but will want to standardize this I think...
 
-#if [ -f /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh ]; then
-#
-#  if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
-#    /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/icarus.opensciencegrid.org/products/icarus
-#  fi
-#  source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh || exit 1
-#
-#else
-#  echo "No setup file found."
-#  exit 1
-#fi
-source /LArSoft/Products/setups
+if [ -f /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh ]; then
+
+  if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
+    /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/icarus.opensciencegrid.org/products/icarus
+  fi
+  source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh || exit 1
+
+else
+  echo "No setup file found."
+  exit 1
+fi
 
 
 setup gitflow || exit 1
