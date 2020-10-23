@@ -7,7 +7,7 @@
 
 echo "sbncode version: $SBN"
 echo "base qualifiers: $QUAL"
-echo "larsoft qualifiers: $LARSOFT_QUAL"
+echo "s qualifier: $SQUAL"
 echo "build type: $BUILDTYPE"
 echo "workspace: $WORKSPACE"
 
@@ -118,7 +118,7 @@ fi
 
 # Construct name of larsoft manifest.
 
-larsoft_hyphen_qual=`echo $LARSOFT_QUAL | tr : - | sed 's/-noifdh//'`
+larsoft_hyphen_qual=`echo $SQUAL:$QUAL | tr : - | sed 's/-noifdh//'`
 larsoft_manifest=larsoft-${larsoft_dot_version}-${flvr}-${larsoft_hyphen_qual}-${BUILDTYPE}_MANIFEST.txt
 echo "Larsoft manifest:"
 echo $larsoft_manifest
