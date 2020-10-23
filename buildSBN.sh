@@ -88,6 +88,11 @@ sbnobj_version=`grep sbnobj $MRB_SOURCE/sbncode/ups/product_deps | grep -v quali
 echo "sbnobj version: $sbnobj_version"
 mrb g -r -t $sbnobj_version sbnobj || exit 1
 
+# Extract sbndaq_artdaq_core version from sbncode product_deps
+sbndaq_artdaq_core_version=`grep sbndaq_artdaq_core $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+echo "sbndaq_artdaq_core version: $sbndaq_artdaq_core_version"
+mrb g -r -t $sbndaq_artdaq_core_version sbndaq_artdaq_core || exit 1
+
 cd $MRB_BUILDDIR || exit 1
 mrbsetenv || exit 1
 mrb b -j$ncores || exit 1
@@ -119,7 +124,7 @@ echo "Larsoft manifest:"
 echo $larsoft_manifest
 echo
 
-# Fetch larsoft manifest from scisoft and append to sbndcode manifest.
+# Fetch larsoft manifest from scisoft and append to sbncode manifest.
 
 curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/larsoft/${larsoft_version}/manifest/${larsoft_manifest} >> $manifest || exit 1
 
