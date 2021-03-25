@@ -11,7 +11,7 @@ quals=$2
 setup larsoft $1 -q $2
 
 mydir="BuildAreas/${version}_sbn"
-mkdir $mydir
+mkdir -p $mydir
 cd $mydir
 mrb newDev -v $version -q $quals
 source localProducts*/setup
