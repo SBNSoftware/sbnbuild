@@ -8,9 +8,11 @@ setup mrb
 version=$1
 quals=$2
 
+datestring=`date +%d.%m.%Y_%H%M%S`
+
 setup larsoft $1 -q $2
 
-mydir="BuildAreas/${version}_sbn"
+mydir="BuildAreas/${version}_sbn_${datestring}"
 mkdir -p $mydir
 cd $mydir
 mrb newDev -v $version -q $quals
