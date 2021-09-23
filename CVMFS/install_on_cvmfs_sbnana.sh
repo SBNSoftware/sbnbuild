@@ -109,49 +109,49 @@ do
   done
 done
 
-## Post-processing for default versions
-#version=v${dist:5:2}_${dist:8:2}_${dist:11:2}
-##version=v08_36_01_3_MCP2_0
-#versiondir=${dir}/sbndcode/${version}.version
-#upsdir=${dir}/sbndcode/${version}/ups
-#
-## Check both directories exist
-#if [ ! -d "$versiondir" ]; then
-#  echo "Version directory doesn't exist!"
-#  exit
-#fi
-#if [ ! -d "$upsdir" ]; then
-#  echo "UPS directory doesn't exist!"
-#  exit
-#fi
-#
-## Copy version files for each OS and remove qualifiers
-#for os in Linux64bit+2.6-2.12  Linux64bit+3.10-2.17 
+# Post-processing for default versions
+version=v${dist:5:2}_${dist:8:2}_${dist:11:2}
+#version=v08_36_01_3_MCP2_0
+versiondir=${dir}/sbndcode/${version}.version
+upsdir=${dir}/sbndcode/${version}/ups
+
+# Check both directories exist
+if [ ! -d "$versiondir" ]; then
+  echo "Version directory doesn't exist!"
+  exit
+fi
+if [ ! -d "$upsdir" ]; then
+  echo "UPS directory doesn't exist!"
+  exit
+fi
+
+# Copy version files for each OS and remove qualifiers
+for os in Linux64bit+2.6-2.12  Linux64bit+3.10-2.17 
+do
+  cp ${versiondir}/${os}_e17_prof ${versiondir}/${os}
+  sed -i -e 's/e17:prof//g' ${versiondir}/${os}
+done
+#for os in Darwin64bit+16 
 #do
-#  cp ${versiondir}/${os}_e17_prof ${versiondir}/${os}
-#  sed -i -e 's/e17:prof//g' ${versiondir}/${os}
+#  cp ${versiondir}/${os}_c2_prof ${versiondir}/${os}
+#  sed -i -e 's/c2:prof//g' ${versiondir}/${os}
 #done
-##for os in Darwin64bit+16 
-##do
-##  cp ${versiondir}/${os}_c2_prof ${versiondir}/${os}
-##  sed -i -e 's/c2:prof//g' ${versiondir}/${os}
-##done
-#
-#if [ $(wc -l < ${upsdir}/sbndcode.table) != 193 ]; then
-#  echo "sbndcode.table FILE HAS CHANGED SIZE!"
-#  exit
-#fi
-#
-## Copy e17:prof/c2:prof block from table file and remove qualifiers
-## Now need to specify flavour for default setup
+
+if [ $(wc -l < ${upsdir}/sbndcode.table) != 193 ]; then
+  echo "sbndcode.table FILE HAS CHANGED SIZE!"
+  exit
+fi
+
+# Copy e17:prof/c2:prof block from table file and remove qualifiers
+# Now need to specify flavour for default setup
+sed -i 6r<(sed '97,114!d' ${upsdir}/sbndcode.table) ${upsdir}/sbndcode.table
+sed -i -e '0,/e17:prof/s/e17:prof//' ${upsdir}/sbndcode.table
+sed -i -e '0,/ANY/s/ANY/Linux64bit+2.6-2.12/' ${upsdir}/sbndcode.table
+
+sed -i 6r<(sed '115,132!d' ${upsdir}/sbndcode.table) ${upsdir}/sbndcode.table
+sed -i -e '0,/e17:prof/s/e17:prof//' ${upsdir}/sbndcode.table
+sed -i -e '0,/ANY/s/ANY/Linux64bit+3.10-2.17/' ${upsdir}/sbndcode.table
+
 #sed -i 6r<(sed '97,114!d' ${upsdir}/sbndcode.table) ${upsdir}/sbndcode.table
-#sed -i -e '0,/e17:prof/s/e17:prof//' ${upsdir}/sbndcode.table
-#sed -i -e '0,/ANY/s/ANY/Linux64bit+2.6-2.12/' ${upsdir}/sbndcode.table
-#
-#sed -i 6r<(sed '115,132!d' ${upsdir}/sbndcode.table) ${upsdir}/sbndcode.table
-#sed -i -e '0,/e17:prof/s/e17:prof//' ${upsdir}/sbndcode.table
-#sed -i -e '0,/ANY/s/ANY/Linux64bit+3.10-2.17/' ${upsdir}/sbndcode.table
-#
-##sed -i 6r<(sed '97,114!d' ${upsdir}/sbndcode.table) ${upsdir}/sbndcode.table
-##sed -i -e '0,/c2:prof/s/c2:prof//' ${upsdir}/sbndcode.table
-##sed -i -e '0,/ANY/s/ANY/Darwin64bit+16/' ${upsdir}/sbndcode.table
+#sed -i -e '0,/c2:prof/s/c2:prof//' ${upsdir}/sbndcode.table
+#sed -i -e '0,/ANY/s/ANY/Darwin64bit+16/' ${upsdir}/sbndcode.table
