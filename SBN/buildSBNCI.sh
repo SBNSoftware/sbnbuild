@@ -27,12 +27,14 @@ if [[ $EXP == "sbnd" ]]; then
   ls /cvmfs/sbnd.opensciencegrid.org
   echo
   
-  if [ -f /cvmfs/sbnd.opensciencegrid.org/products/sbnd/setup ]; then
+  if [ -f /grid/fermiapp/products/sbnd/setup_sbnd.sh ]; then
+    source /grid/fermiapp/products/sbnd/setup_sbnd.sh || exit 1
+  elif [ -f /cvmfs/sbnd.opensciencegrid.org/products/sbnd/setup_sbnd.sh ]; then 
     if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
       /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/sbnd.opensciencegrid.org/products/sbnd
     fi
     echo "Setting up sbnd cvmfs"
-    source /cvmfs/sbnd.opensciencegrid.org/products/sbnd/setup || exit 1
+    source /cvmfs/sbnd.opensciencegrid.org/products/sbnd/setup_sbnd.sh || exit 1
   else
     echo "No sbnd setup file found."
     exit 1
