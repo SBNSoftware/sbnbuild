@@ -90,7 +90,7 @@ source localProducts*/setup || exit 1
 set -x
 cd $MRB_SOURCE  || exit 1
 # make sure we get a read-only copy
-mrb g -r https://github.com/SBNSoftware/sbnci@$SBNCI || exit 1
+mrb g -r -t $SBNCI https://github.com/SBNSoftware/sbnci || exit 1
 
 exp_version=`grep ${EXP}code $MRB_SOURCE/sbnci/ups/product_deps | grep -v qualifier | awk '{print $2}'`
 echo "experiment code version: $exp_version" 
