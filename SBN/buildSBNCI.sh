@@ -110,8 +110,7 @@ manifest=sbnci-*_MANIFEST.txt
 # Extract flavor.
 flvr=`ups flavor -4`
 
-exp_hyphen_qual=`echo $QUAL | tr : - | sed 's/-noifdh//'`
-exp_manifest=${EXP}${expcode_dot_version}-${flvr}-${expcode_hyphen_qual}${BUILDTYPE}_MANIFEST.txt
+exp_manifest=${EXP}${expcode_dot_version}-${flvr}-${QUAL}-${BUILDTYPE}_MANIFEST.txt
 echo "experiment manifest: $exp_manifest"
 
 curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/${EXP}/${exp_version}/manifest/${exp_manifest} >> $manifest || exit 1
