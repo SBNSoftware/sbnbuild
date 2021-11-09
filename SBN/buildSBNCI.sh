@@ -93,7 +93,9 @@ cd $MRB_SOURCE  || exit 1
 mrb g -r https://github.com/SBNSoftware/sbnci@$SBNCI || exit 1
 
 exp_version=`grep ${EXP}code $MRB_SOURCE/sbnci/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+echo "experiment code version: $exp_version" 
 exp_dot_version=`echo ${exp_version} |  sed -e 's/_/./g' | sed -e 's/^v//'`
+echo "experiment code dot version: $exp_dot_version"
 mrb g -r -t ${exp_version} ${EXP}code
 
 cd $MRB_BUILDDIR || exit 1
@@ -110,7 +112,7 @@ manifest=sbnci-*_MANIFEST.txt
 # Extract flavor.
 flvr=`ups flavor -4`
 
-exp_manifest=${EXP}${expcode_dot_version}-${flvr}-${QUAL}-${BUILDTYPE}_MANIFEST.txt
+exp_manifest=${EXP}-${expcode_dot_version}-${flvr}-${QUAL}-${BUILDTYPE}_MANIFEST.txt
 echo "experiment manifest: $exp_manifest"
 
 curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/${EXP}/${exp_version}/manifest/${exp_manifest} >> $manifest || exit 1
