@@ -49,12 +49,12 @@ if [[ $EXP == "icarus" ]]; then
   ls /cvmfs/icarus.opensciencegrid.org
   echo
 
-  if [ -f /cvmfs/icarus.opensciencegrid.org/products/icarus/setup ]; then
+  if [ -f /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh ]; then
     if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
-      /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/icarus.opensciencegrid.org/products/icarus
+      /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh
     fi
     echo "Setting up icarus cvmfs"
-    source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup || exit 1
+    source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh || exit 1
   else
     echo "No icarus setup file found."
     exit 1
@@ -102,7 +102,7 @@ mrb b -j$ncores $opt || exit 1
 if uname | grep -q Linux; then
   cp /usr/lib64/libXmu.so.6 sbnci/lib
 fi
-mrb mp -n sbnci -- -j$ncores || exit 1
+mrb mp -n sbnci -j$ncores $opt || exit 1
 
 # Fetch sbndcode or icaruscode manifest from scisoft and append to sbnci manifest.
 manifest=sbnci-*_MANIFEST.txt
