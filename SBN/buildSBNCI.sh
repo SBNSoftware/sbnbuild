@@ -124,10 +124,14 @@ if echo $QUAL | grep -q noifdh; then
   rm -f $manifest
 fi
 
-# Save artifacts.
-
+# Save artifacts and append EXP option to names.
+suff=".tar.bz2"
+for tarball in *.bz2; do
+  mv $tarball "${tarball/$suff/-${EXP}$suff}"
+done
 mv *.bz2  $WORKSPACE/copyBack/ || exit 1
-manifest=sbn-*_MANIFEST.txt
+
+manifest=sbnci-*_MANIFEST.txt
 if [ -f $manifest ]; then
   mv $manifest  $WORKSPACE/copyBack/ || exit 1
 fi
