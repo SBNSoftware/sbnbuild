@@ -40,6 +40,7 @@ if [[ $EXP == "sbnd" ]]; then
     exit 1
   fi
 
+  expqual=$QUAL
   opt="-DSBND=ON"
 
 fi
@@ -60,6 +61,7 @@ if [[ $EXP == "icarus" ]]; then
     exit 1
   fi
 
+  expqual=e20
   opt="-DICARUS=ON"
 
 fi
@@ -112,7 +114,7 @@ manifest=sbnci-*_MANIFEST.txt
 # Extract flavor.
 flvr=`ups flavor -4`
 
-exp_manifest=${EXP}-${exp_dot_version}-${flvr}-${QUAL}-${BUILDTYPE}_MANIFEST.txt
+exp_manifest=${EXP}-${exp_dot_version}-${flvr}-${expqual}-${BUILDTYPE}_MANIFEST.txt
 echo "experiment manifest: $exp_manifest"
 
 curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/${EXP}/${exp_version}/manifest/${exp_manifest} >> $manifest || exit 1
