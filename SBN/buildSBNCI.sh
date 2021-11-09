@@ -7,7 +7,7 @@
 
 echo "experiment: $EXP"
 echo "sbnci version: $SBNCI_VERSION"
-echo "sbnci tag: $SBN"
+echo "sbnci tag: $SBNCI"
 echo "base qualifiers: $QUAL"
 echo "build type: $BUILDTYPE"
 echo "workspace: $WORKSPACE"
@@ -111,7 +111,7 @@ manifest=sbnci-*_MANIFEST.txt
 flvr=`ups flavor -4`
 
 exp_hyphen_qual=`echo $QUAL | tr : - | sed 's/-noifdh//'`
-exp_manifest=${EXP}-${expcode_dot_version}-${flvr}-${expcode_hyphen_qual}-${BUILDTYPE}_MANIFEST.txt
+exp_manifest=${EXP}code-${expcode_dot_version}-${flvr}-${expcode_hyphen_qual}-${BUILDTYPE}_MANIFEST.txt
 
 curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/${EXP}/${exp_version}/manifest/${exp_manifest} >> $manifest || exit 1
 
