@@ -106,7 +106,7 @@ mrb b -j$ncores $opt || exit 1
 if uname | grep -q Linux; then
   cp /usr/lib64/libXmu.so.6 sbnci/lib
 fi
-mrb mp -n sbnci -- -j$ncores $opt || exit 1
+mrb mp -n sbnci -- -j$ncores || exit 1
 
 # Fetch sbndcode or icaruscode manifest from scisoft and append to sbnci manifest.
 manifest=sbnci-*_MANIFEST.txt
