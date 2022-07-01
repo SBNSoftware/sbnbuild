@@ -1,6 +1,6 @@
 #!/bin/bash
 source /cvmfs/fermilab.opensciencegrid.org/products/artdaq/setup
-source /cvmfs/larsoft.opensciencegrid.org/products/setup
+source /cvmfs/larsoft.opensciencegrid.org/products/setup_larsoft.sh
 source /cvmfs/sbn.opensciencegrid.org/products/sbn/setup
 
 export MRB_PROJECT=sbndqm
