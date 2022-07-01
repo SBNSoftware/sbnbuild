@@ -94,7 +94,7 @@ fi
 
 dir=/cvmfs/sbn.opensciencegrid.org/products/sbn/
 #dir=/home/cvmfssbn/temp/
-qual1=e19
+qual1=e20
 qual2=c7
 
 echo $dir
@@ -103,7 +103,7 @@ echo $dist
 
 for buildtype in debug prof
 do
-  for qual in e19 e20 c7
+  for qual in e20 c7
   do
     pullPackage.sh -r $dir slf7 $dist $qual $buildtype
   done
