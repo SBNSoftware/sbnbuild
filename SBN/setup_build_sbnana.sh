@@ -1,5 +1,5 @@
 #!/bin/bash
-source /cvmfs/larsoft.opensciencegrid.org/products/setup
+source /cvmfs/larsoft.opensciencegrid.org/products/setup_larsoft.sh
 source /cvmfs/sbn.opensciencegrid.org/products/sbn/setup
 
 export MRB_PROJECT=sbnana
