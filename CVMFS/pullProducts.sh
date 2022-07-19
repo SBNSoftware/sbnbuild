@@ -18,12 +18,15 @@ Options:
   -s    Stream tarballs instead of downloading (mutually incompatible with -r).
   -V    Print version and exit.
 
+  -S <spack_topdir>  Top directory for spack buildcache installation
+                     Must NOT be the same as product_topdir.
+
 Arguments:
 
   product_topdir   Top directory for relocatable-UPS products area.
   
   OS               Supported os distributions: 
-                   slf5, slf6, slf7, d14, d15, d16, d17, d18, u14, u16, u18
+                   slf5, slf6, slf7, d14, d15, d16, d17, d18, u14, u16, u18, u20
  
   bundle-spec      Bundle name and version, e.g., art-v1_12_04
  
@@ -39,7 +42,7 @@ EOF
 print_version()
 {
   echo
-  echo "$(basename ${0}) 2.02.04"
+  echo "$(basename ${0}) 2.04.00"
 }
 
 calc_compression_opt()
@@ -84,7 +87,7 @@ function pull_product()
       return 0
     fi
   fi
-  local mydist=http://scisoft.fnal.gov/scisoft/packages/${myprod}/${myver}/${mytar}
+  local mydist=https://scisoft.fnal.gov/scisoft/packages/${myprod}/${myver}/${mytar}
   echo "INFO: pull / untar ${mytar}"
   cd ${working_dir}
   if (( ${stream_tarballs:-0} )); then # Streaming direct to tar.
@@ -172,7 +175,7 @@ function install_ups()
   fi
   local ups_version=$(echo ${words[1]} | tr "\"" " ")
   local tarball=$(echo ${words[2]} | tr "\"" " ")
-  local mydist=http://scisoft.fnal.gov/scisoft/packages/${product}/${ups_version}/${tarball}
+  local mydist=https://scisoft.fnal.gov/scisoft/packages/${product}/${ups_version}/${tarball}
   local want_ups_install=0
   if [ -d ${product_topdir}/ups ]; then
     local current_ups=`ls ${product_topdir}/ups | grep -v version | grep -v current | sort -r | head -n 1`
@@ -298,6 +301,9 @@ function check_install()
   elif [ "${myarch}" = "u18" ] && [ "${myplat}" = "x86_64" ]
   then
     myflvr="-H Linux64bit+4.15-2.27"
+  elif [ "${myarch}" = "u20" ] && [ "${myplat}" = "x86_64" ]
+  then
+    myflvr="-H Linux64bit+5.4-2.31"
   elif  [ "${myarch}" = "d12" ] && [ "${myplat}" = "x86_64" ]
   then
     myflvr="-H Darwin+12"
@@ -364,8 +370,8 @@ get_manifest()
       exit 1
     fi
   else
-    local newlocation=http://scisoft.fnal.gov/scisoft/bundles/${bundle}/${bundle_version}/manifest
-    local oldlocation=http://scisoft.fnal.gov/scisoft/manifest/${bundle}/${bundle_version}
+    local newlocation=https://scisoft.fnal.gov/scisoft/bundles/${bundle}/${bundle_version}/manifest
+    local oldlocation=https://scisoft.fnal.gov/scisoft/manifest/${bundle}/${bundle_version}
     local alternate_manifest=${oldlocation}/${mname}
     if [ "${install_os}" = "u14" ]
     then
@@ -394,6 +400,9 @@ parse_manifest()
     local version=$(echo ${words[1]} | tr "\"" " ")
     local tarball=$(echo ${words[2]} | tr "\"" " ")
     #echo "found: ${product} ${version} ${tarball}"
+    if [ "${product}" = "spack_command" ]; then
+      run_spack_command $line
+    else
     local product_is_installed="true"
     check_install ${product} ${version} ${tarball} || { product_is_installed="false"; }
     if [ "${product_is_installed}" = "true" ]; then
@@ -404,14 +413,15 @@ parse_manifest()
     else
       pull_product ${product} ${version} ${tarball} || exit $?
     fi
+    fi
   done || exit $?
 }
 
 pull_buildcfg()
 {
   cd ${working_dir}
-  local newbldlocation=http://scisoft.fnal.gov/scisoft/bundles/${bundle}/${bundle_version}/buildcfg
-  local oldbldlocation=http://scisoft.fnal.gov/scisoft/projects/${bundle}/${bundle_version}
+  local newbldlocation=https://scisoft.fnal.gov/scisoft/bundles/${bundle}/${bundle_version}/buildcfg
+  local oldbldlocation=https://scisoft.fnal.gov/scisoft/projects/${bundle}/${bundle_version}
   local mybuildcfg=${bundle}-buildcfg-${bundle_dot_version}
   local mycfg=${bundle}-cfg-${bundle_dot_version}
   local mybuildscript=""
@@ -451,7 +461,7 @@ install_source()
   parse_manifest
   cd ${working_dir}
   curl --fail --silent --location --insecure \
-    -O http://scisoft.fnal.gov/scisoft/bundles/tools/buildFW  || \
+    -O https://scisoft.fnal.gov/scisoft/bundles/tools/buildFW  || \
     { cat 1>&2 <<EOF
 ERROR: pull of buildFW failed
 EOF
@@ -462,7 +472,7 @@ EOF
 
 function list_available_releases()
 {
-  local url="http://scisoft.fnal.gov/scisoft/bundles/${bundle}/"
+  local url="https://scisoft.fnal.gov/scisoft/bundles/${bundle}/"
   local release_list=(`curl --silent -F "web=/dev/null;type=text/html" ${url} \
           | grep bundles \
           | grep id \
@@ -486,7 +496,7 @@ function list_available_releases()
 
 function list_available_manifests()
 {
-  local url="http://scisoft.fnal.gov/scisoft/bundles/${bundle}/${bundle_version}/manifest/"
+  local url="https://scisoft.fnal.gov/scisoft/bundles/${bundle}/${bundle_version}/manifest/"
   local manifest_list=(`curl --silent -F "web=/dev/null;type=text/html" ${url} \
           | grep MANIFEST \
           | cut -f4 -d" " \
@@ -515,7 +525,8 @@ function list_available_manifests()
 		                 | sed -e 's/Linux64bit+3\.16-2\.19/u14/' \
 		                 | sed -e 's/Linux64bit+3\.19-2\.19/u14/' \
 		                 | sed -e 's/Linux64bit+4\.4-2\.23/u16/' \
-                     | sed -e 's/Linux64bit+4\.15-2\.27/u18/'`
+                     | sed -e 's/Linux64bit+4\.15-2\.27/u18/' \
+                     | sed -e 's/Linux64bit+5\.4-2\.31/u20/'`
       local platform=`echo ${short_name} | cut -f1 -d "-"`
       local quals=`echo ${short_name} | sed -e s"/${platform}-//" \
                         	| sed -e 's/source//' \
@@ -523,6 +534,54 @@ function list_available_manifests()
       echo "${platform} ${bundle}-${bundle_version} ${quals}"
     done
   fi
+}
+
+# initialize spack package directory
+init_package_dir() {
+  if [ -e ${spack_topdir}/setup-env.sh ]; then
+    echo "INFO: spack is already initialized"
+    return
+  fi
+  # Set up spack configured to install into a ups like directory structure
+  cd ${spack_topdir}
+  git clone https://github.com/marcmengel/spack-infrastructure ${spack_topdir}/spack-infrastructure
+  cd "${spack_topdir}"/spack-infrastructure
+  git checkout v2_17_01
+  cd ${spack_topdir}
+  export PATH=$PATH:${spack_topdir}/spack-infrastructure/bin
+  make_spack --minimal -u ${spack_topdir}
+  cp -p ${spack_topdir}/patchelf/*/*/bin/patchelf ${spack_topdir}/spack-infrastructure/bin/
+  # use system zlib
+  source ${spack_topdir}/setup-env.sh
+echo
+type patchelf
+echo
+  echo "packages:" >> ${spack_topdir}/spack/current/NULL/etc/spack/packages.yaml
+  echo "  zlib:" >> ${spack_topdir}/spack/current/NULL/etc/spack/packages.yaml
+  echo "    externals: [{spec: zlib@1.2.7, prefix: /usr}]"  >> ${spack_topdir}/spack/current/NULL/etc/spack/packages.yaml
+  # return to working directory
+  cd ${working_dir}
+}
+
+run_spack_command() {
+if [ -z "$spack_topdir" ]; then
+  echo "INFO:  spack_command will be ignored since a spack packages directory has not been specified."
+  echo "INFO: If you are making a local install, please use -S to specify the spack package directory."
+else
+  [[ -n "$spack_topdir" ]] && \
+    [[ -d "${spack_topdir}" ]] && \
+    [[ -w "${spack_topdir}" ]] || \
+    { echo "ERROR: Could not write to specified spack package directory ${spack_topdir}." 1>&2; exit 1; }
+  if [ ! -e ${spack_topdir}/setup-env.sh ]; then
+    init_package_dir
+  fi
+  #cd ${spack_topdir}
+  source ${spack_topdir}/setup-env.sh
+  local myline=${@}
+  local mycmd=`echo ${myline} | sed -e 's/spack_command //'`
+  echo "INFO: running spack command: $mycmd"
+  ${mycmd}
+fi
 }
 
 ########################################################################
@@ -538,7 +597,13 @@ logdir=$(/bin/pwd)
 
 print_version
 
-while getopts :dfhlMprsV OPT; do
+# use to get the full path
+( cd / ; /bin/pwd -P ) >/dev/null 2>&1
+if (( $? == 0 )); then
+  pwd_P_arg="-P"
+fi
+
+while getopts :S:dfhlMprsV OPT; do
   case ${OPT} in
     d)
       curl_silent=""
@@ -566,6 +631,10 @@ while getopts :dfhlMprsV OPT; do
     s)
       (( stream_tarballs = 1 ))
       ;;
+    S)
+      #spack_topdir=$OPTARG
+      spack_topdir=`cd ${OPTARG} && /bin/pwd ${pwd_P_arg}`
+      ;;
     V)
       print_version
       exit 1
@@ -577,7 +646,8 @@ while getopts :dfhlMprsV OPT; do
   esac
 done
 shift `expr $OPTIND - 1`
-OPTIND=1
+##shift $(( OPTIND - 1 ))
+##OPTIND=1
 
 if (( $# != 5 )) && (( $# != 3 )); then
   echo "ERROR: Expected 3 or 5 non-option arguments; received $#." 1>&2
@@ -594,12 +664,31 @@ elif (( ${stream_tarballs:-0} )); then
   echo "INFO: product tarballs will be streamed directly to tar"
 fi
 
-product_topdir="${1}"
+#product_topdir="${1}"
+product_topdir=`cd ${1} && /bin/pwd ${pwd_P_arg}`
 
 [[ -n "$product_topdir" ]] && \
   [[ -d "${product_topdir}" ]] && \
   [[ -w "${product_topdir}" ]] || \
   { echo "ERROR: Could not write to specified product directory \"${product_topdir}\"." 1>&2; exit 1; }
+
+echo "ups: $product_topdir"
+echo "spack: $spack_topdir"
+
+if [ -z "$spack_topdir" ]; then
+  echo "INFO: ups products will be installed in $product_topdir"
+else
+  if [[ "$spack_topdir" == "$product_topdir" ]]; then
+    echo "ERROR: spack_topdir cannot be the same as product_topdir"
+    exit 1
+  fi
+  [[ -n "$spack_topdir" ]] && \
+    [[ -d "${spack_topdir}" ]] && \
+    [[ -w "${spack_topdir}" ]] || \
+    { echo "ERROR: Could not write to specified spack package directory ${spack_topdir}." 1>&2; exit 1; }
+  echo "INFO: ups products will be installed in $product_topdir"
+  echo "INFO: spack packages will be installed in $spack_topdir"
+fi
 
 install_os="${2}"
 bundle_spec="${3}"
@@ -663,6 +752,7 @@ case ${install_os} in
   u14)  manifest_os="Linux64bit+3.13-2.19";;    
   u16)  manifest_os="Linux64bit+4.4-2.23";;
   u18)  manifest_os="Linux64bit+4.15-2.27";;
+  u20)  manifest_os="Linux64bit+5.4-2.31";;
   source)
      manifest_os=${install_os}
      install_source
