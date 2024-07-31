@@ -42,7 +42,7 @@ EOF
 
 print_version()
 {
-  echo "$(basename ${0}) 5.00.00"
+  echo "$(basename ${0}) 5.01.00"
 }
 
 uniquify_var() {
@@ -108,6 +108,8 @@ while getopts :b:d:E:K:f:t:M:m:Nn:p:q:hVw OPT; do
           else
             have_swarm+=(0)
           fi;;
+        Alma*) os_array+=(${OPTARG}); have_swarm+=(1);;
+	swarm) os_array+=(${OPTARG}); have_swarm+=(1);;
         *) echo "ERROR: Unrecognized argument to -${OPT}" 1>&2; exit 1
       esac;;
     N) (( no_clobber = 1 ));;
@@ -159,8 +161,8 @@ if (( ${#BUILDTYPE[@]} == 0 )); then
 fi
 
 if ((${#os_array[@]} == 0)); then
-  echo "INFO: default to copying artifacts for SLF and OSX"
-  os_array=(SLF{6,7} OSX-10.1{1,2,3,4})
+  echo "INFO: default to copying artifacts for Alma Linux"
+  os_array=(AlmaLinux AlmaLinux-9.4)
   # Horrible Bash trick to have an array filled with a "1" for every
   # element of os_array.
   have_swarm=($(printf "1\n%.0s" "${os_array[@]}"))
