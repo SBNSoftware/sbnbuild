@@ -142,13 +142,11 @@ do
 
         # Update versions in releaseDB/CMakeLists.txt
 
-        for rdb in $MRB_SOURCE/*/releaseDB/CMakeLists.txt
-        do
-          if [ -f "$rdb" ]; then
-            sed "s;\([ 	]*create_product_variables[ 	]*([ 	]*$pkg[ 	][ 	]*\)[A-Za-z0-9][^ 	]*\([ 	]*)[ 	]*\)$;\1$newv\2;" $rdb > ${rdb}.new
-            mv -f ${rdb}.new $rdb
-          fi
-        done
+        #for rdb in $MRB_SOURCE/*/releaseDB/CMakeLists.txt
+        #do
+        #  sed "s;\([ 	]*create_product_variables[ 	]*([ 	]*$pkg[ 	][ 	]*\)[A-Za-z0-9][^ 	]*\([ 	]*)[ 	]*\)$;\1$newv\2;" $rdb > ${rdb}.new
+        #  mv -f ${rdb}.new $rdb
+        #done
       else
         echo "Working version matches $v"
       fi
@@ -165,15 +163,12 @@ do
 
       # Also update versions in releaseDB/CMakeLists.txt
 
-      for rdb in $MRB_SOURCE/*/releaseDB/CMakeLists.txt
-      do
-        if [ -f "$rdb" ]; then
-          sed "s;\([ 	]*create_product_variables[ 	]*([ 	]*$pkg[ 	][ 	]*\)[A-Za-z0-9][^ 	]*\([ 	]*)[ 	]*\)$;\1$v\2;" $rdb > ${rdb}.new
-          mv -f ${rdb}.new $rdb
-        fi
-      done
+      #for rdb in $MRB_SOURCE/*/releaseDB/CMakeLists.txt
+      #do
+      #  sed "s;\([ 	]*create_product_variables[ 	]*([ 	]*$pkg[ 	][ 	]*\)[A-Za-z0-9][^ 	]*\([ 	]*)[ 	]*\)$;\1$v\2;" $rdb > ${rdb}.new
+      #  mv -f ${rdb}.new $rdb
+      #done
     fi
 
   fi
 done
-
