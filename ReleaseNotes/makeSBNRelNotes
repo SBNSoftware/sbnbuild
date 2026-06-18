@@ -1,0 +1,189 @@
+#!/bin/bash
+
+# create a basic relase note page for an sbn release
+
+# Subsidiary packages to be checked, These must be in order.
+declare -a packages=(sbnalg sbnanaobj sbnobj)
+#declare -a extra_packages=()
+#declare -a obj_packages=()
+#declare -a util_packages=()
+
+function get_working_dir() 
+{
+    cd ${currentDir}
+    if [ -d ${working_dir}/${sbn_version} ]; then
+            echo "ERROR: ${working_dir}/${sbn_version} already exists!"
+            exit 5
+    fi
+    mkdir -p ${working_dir}/${sbn_version}
+    # git the full path
+    ( cd / ; /bin/pwd -P ) >/dev/null 2>&1
+    if (( $? == 0 )); then
+      pwd_P_arg="-P"
+    fi
+    my_working_dir=`cd ${working_dir}/${sbn_version} && /bin/pwd ${pwd_P_arg}`
+}
+
+function get_version()
+{
+  local package=$1
+  echo "checking package ${package}"
+  have_version=`grep '^[  ]*project'  ${my_working_dir}/${package}/CMakeLists.txt | grep VERSION | wc -l`
+  if (( ${have_version} == 0 )); then
+    if [[ `grep CMAKE_PROJECT_VERSION_STRING  ${my_working_dir}/${package}/CMakeLists.txt |  tr '()' ' ' | tr -s '[:space:]' | cut -f2 -d " "` == set ]]; then
+      relver=v`grep CMAKE_PROJECT_VERSION_STRING  ${my_working_dir}/${package}/CMakeLists.txt |  tr '()' ' ' | tr -s '[:space:]' | cut -f4 -d " " | sed 's/\./_/g' | sed 's/-rc/rc/'`
+    else
+      relver=v`grep CMAKE_PROJECT_VERSION_STRING  ${my_working_dir}/${package}/CMakeLists.txt |  tr '()' ' ' | tr -s '[:space:]' | cut -f3 -d " " | sed 's/\./_/g' | sed 's/-rc/rc/'`
+    fi
+  else
+    relver=v`grep '^[  ]*project' ${my_working_dir}/${package}/CMakeLists.txt | grep ${package} | tr -s '[:space:]' | cut -f3 -d " " | sed 's/\./_/g'`
+  fi
+  echo "Found ${package} version ${relver}"
+}
+
+
+function get_package_release()
+{
+  local pkg=$1
+  local skip_pkg="false"
+  pv=SBN_SUITE_${sbn_version}
+  cd ${my_working_dir}
+  git clone ${repository}/${pkg}${suffix} || { echo "ERROR: failed to clone ${pkg}"; exit 1; }
+  cd ${my_working_dir}/${pkg}
+  git checkout ${previous_version_string} || \
+    { echo "${pkg} has no ${previous_version_string} tag"; skip_pkg="true"; }
+  if [[ ${skip_pkg} == "true" ]]; then
+    prever=0;
+  else
+    get_version ${pkg}
+    prever=${relver}
+  fi
+  skip_pkg="false"
+  git checkout ${pv} || \
+     { echo "${pkg} has no ${pv} tag"; skip_pkg="true"; }
+  if [[ ${skip_pkg} == "true" ]]; then
+    relver=0;
+  else
+    get_version ${pkg}
+  fi
+  echo "Found ${pkg} ${relver} ${prever}"
+  if [[ ${skip_pkg} != "true" ]]; then
+    echo >> ${relnote}
+    echo "## ${pkg} ${relver}" >> ${relnote}
+    echo >> ${relnote}
+    if [[ ${prever} != ${relver} ]]; then
+      echo "- [changes since ${prever}](${repository}/${pkg}/compare/${prever}...${relver})" >> ${relnote}
+      echo >> ${relnote}
+    fi
+  fi
+  cd ${my_working_dir}
+}
+
+################################################################################
+
+prog=${0##*/}
+
+function usage() {
+    cat 1>&2 <<EOF
+${prog} --help|-h|-\?
+${prog} <working_directory> <tag> <previous tag>
+EOF
+}
+
+getopt -T >/dev/null 2>&1
+if (( $? != 4 )); then
+  echo "ERROR: GNU getopt required! Check SETUP_GETOPT and PATH." 1>&2
+  exit 1
+fi
+
+TEMP=`getopt -n "$prog" -o ':h\?' --long help -- "${@}"`
+currentDir=${PWD}
+
+eval set -- "$TEMP"
+while true; do
+  case $1 in
+    --help|-h|-\?)
+      usage
+      exit 1
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Bad argument \"$1\"" 1>&2
+      usage
+      exit 1
+  esac
+done
+
+[[ -z "$1" ]] && { 
+  echo "Require working directory as non-option argument" 1>&2; usage; exit 1; }
+[[ -z "$2" ]] && { echo "Require existing sbncode tag as non-option argument" 1>&2; usage; exit 1; }
+[[ -z "$3" ]] && { echo "Require previous sbncode tag as non-option argument" 1>&2; usage; exit 1; }
+
+working_dir=$1
+sbn_version=$2
+previous_version=$3
+
+# create ${working_dir}/${sbn_version}
+get_working_dir
+
+today=`date +%m/%d/%Y`
+dotver=`echo ${sbn_version} | sed -e 's%_%.%g'`
+version_string=`echo ${sbn_version} | sed -e 's/_//g' | sed -e 's/^v//'`
+
+previous_version_string=SBN_SUITE_${previous_version}
+
+#repository=http://cdcvs.fnal.gov/projects
+repository=https://github.com/SBNSoftware
+suffix=.git
+
+larsoft_version=x
+
+relnote=${my_working_dir}/ReleaseNotes-${sbn_version}
+rm -f ${relnote}
+echo > ${relnote}
+#echo "| ${sbn_version} | ${larsoft_version} | ${today} |  |  | [Release Notes](https://github.com/SBNSoftware/sbncode/releases/tag/${sbn_version}) |">> ${relnote}
+#echo >> ${relnote}
+echo "# Sbncode ${sbn_version} Release Notes" >> ${relnote}
+echo >> ${relnote}
+#echo "[list of Sbncode releases](sbncode_release_list)" >> ${relnote}
+#echo >> ${relnote}
+#echo "Download instructions for [sbncode ${sbn_version}](http://scisoft.fnal.gov/scisoft/bundles/sbncode/${sbn_version}/sbncode-${sbn_version}.html)" >> ${relnote}
+#echo >> ${relnote}
+echo "## Purpose" >> ${relnote}
+echo >> ${relnote}
+echo "- Integration release" >> ${relnote}
+echo >> ${relnote}
+echo "## Pull Requests" >> ${relnote}
+echo >> ${relnote}
+#echo "## Updated dependencies" >> ${relnote}
+#echo >> ${relnote}
+echo "# Change List" >> ${relnote}
+echo >> ${relnote}
+
+cd ${my_working_dir}
+pkg=sbncode
+git clone ${repository}/${pkg}${suffix} || { echo "ERROR: failed to clone ${pkg}"; exit 1; }
+cd ${my_working_dir}/${pkg}
+git checkout ${previous_version_string}
+  get_version ${pkg}
+  prever=${relver}
+git checkout ${sbn_version}
+  get_version ${pkg}
+echo "## ${pkg} ${relver}" >> ${relnote}
+echo >> ${relnote}
+if [[ ${prever} != ${relver} ]]; then
+  echo "- [changes since ${prever}](${repository}/${pkg}/compare/${prever}...${sbn_version})" >> ${relnote}
+  echo >> ${relnote}
+fi
+echo >> ${relnote}
+cd ${my_working_dir}
+last_pkg=sbncode
+
+for package in "${packages[@]}"; do
+  get_package_release ${package}
+  last_pkg=${package}
+done
+
